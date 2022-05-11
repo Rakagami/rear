@@ -3,6 +3,7 @@
 </div>
 
 [![Python](https://img.shields.io/badge/python-3.7.6-blue)]()
+[![WIP](https://img.shields.io/badge/version-WIP-red)]()
 
 [RadioEar](https://github.com/Rakagami/rear) - A tool to eavesdrop whatever is currently in the air (radio).
 
