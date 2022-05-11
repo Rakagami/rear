@@ -2,7 +2,9 @@ colorama==0.4.4
 deepspeech==0.9.3
 halo==0.0.31
 log-symbols==0.0.14
+mysql-connector-python==8.0.29
 numpy==1.21.6
+protobuf==3.20.1
 PyAudio==0.2.11
 scipy==1.7.3
 six==1.16.0
