@@ -9,16 +9,28 @@ import webrtcvad
 from halo import Halo
 from scipy import signal
 import socket
+import mysql.connector
 
 import collections
 
-logging.basicConfig(filename="test.log", level=logging.DEBUG)
+logging.basicConfig(level=logging.DEBUG)
 
 sampleRate = 48000
 ip = "127.0.0.1"
 port = 7355
 nchannels = 1
 bps = 16 # bit per sample
+
+query_format = "INSERT INTO grafana.wordsOverTime (word, count) VALUES('{}', {})"
+
+# TODO: change hardcoded credentials
+mydb = mysql.connector.connect(
+    host="localhost",
+    port="3306",
+    user="root",
+    password="password",
+    database="grafana",
+)
 
 def listener():
     # Create a UDP socket
@@ -57,38 +69,12 @@ class Audio(object):
     BLOCKS_PER_SECOND = 50
 
     def __init__(self, callback=None, device=None, input_rate=RATE_PROCESS, file=None):
-        def proxy_callback(in_data, frame_count, time_info, status):
-            #pylint: disable=unused-argument
-            #global buf
-            #while(len(buf) == 0):
-            #    pass
-            #if len(buf) > 0:
-            #    in_data = buf.popleft()
-            #else:
-            #    in_data = b"\0\0" * 960
-            #callback(in_data)
-            in_data = b"\0\0" * 960
-            return (None, pyaudio.paContinue)
-        if callback is None: callback = lambda in_data: self.buffer_queue.put(in_data)
         self.buffer_queue = queue.Queue()
         self.device = device
         self.input_rate = input_rate
         self.sample_rate = self.RATE_PROCESS
         self.block_size = int(self.RATE_PROCESS / float(self.BLOCKS_PER_SECOND))
         self.block_size_input = int(self.input_rate / float(self.BLOCKS_PER_SECOND))
-        self.pa = pyaudio.PyAudio()
-
-        kwargs = {
-            'format': self.FORMAT,
-            'channels': self.CHANNELS,
-            'rate': self.input_rate,
-            'frames_per_buffer': self.block_size_input,
-            'input': True,
-            'stream_callback': proxy_callback,
-        }
-
-        self.stream = self.pa.open(**kwargs)
-        self.stream.start_stream()
 
     def resample(self, data, input_rate):
         """
@@ -193,6 +179,30 @@ class VADAudio(Audio):
                     yield None
                     ring_buffer.clear()
 
+def mysql_commiter():
+    global textbuf
+    while True:
+        mycursor = mydb.cursor()
+        worddic = {}
+        qsize = textbuf.qsize()
+        if(textbuf.qsize() > 100):
+            logging.debug(f"High text buf Queue size: {textbuf.qsize()}")
+        for _ in range(qsize):
+            text = textbuf.get()
+            text = text.strip()
+            stext = text.split(" ")
+            for w in stext:
+                if w in worddic:
+                    worddic[w] = worddic[w] + 1
+                else:
+                    worddic[w] = 1
+        for w in worddic:
+            print("Executing ", query_format.format(w, worddic[w]))
+            mycursor.execute(query_format.format(w, worddic[w]), )
+        mycursor.close()
+        mydb.commit()
+        time.sleep(5)
+
 def main(ARGS):
     # Load DeepSpeech model
     if os.path.isdir(ARGS.model):
@@ -208,13 +218,20 @@ def main(ARGS):
         model.enableExternalScorer(ARGS.scorer)
 
     global buf
-    #buf = collections.deque(maxlen=1000)
     buf = queue.Queue()
+
+    global textbuf
+    textbuf = queue.Queue()
 
     # Start listener thread
     print("Starting listener thread")
     t1 = threading.Thread(target=listener)
     t1.start()
+
+    # Start mysql commiter thread
+    print("Starting commiter thread")
+    t2 = threading.Thread(target=mysql_commiter)
+    t2.start()
 
     # Start audio with VAD
     vad_audio = VADAudio(aggressiveness=ARGS.vad_aggressiveness,
@@ -233,28 +250,16 @@ def main(ARGS):
         if frame is not None and cnt < 1000:
             cnt = cnt + 1
             if spinner: spinner.start()
-            logging.debug("streaming frame")
+            #logging.debug("streaming frame")
             stream_context.feedAudioContent(np.frombuffer(frame, np.int16))
         else:
             cnt = 0
             if spinner: spinner.stop()
-            logging.debug("end utterence")
+            #logging.debug("end utterence")
             text = stream_context.finishStream()
-            print("Recognized: %s" % text)
+            #print("Recognized: %s" % text, end="\r")
+            textbuf.put(text)
             stream_context = model.createStream()
-
-    #while True:
-    #    for _ in range(1000):
-    #        stream_context.feedAudioContent(np.frombuffer(buf.get(), np.int16))
-    #    text = stream_context.finishStream()
-    #    print("Recognized: %s" % text)
-    #    stream_context = model.createStream()
-        #if frame is not None:
-        #    stream_context.feedAudioContent(np.frombuffer(frame, np.int16))
-        #else:
-        #    text = stream_context.finishStream()
-        #    print("Recognized: %s" % text)
-        #stream_context = model.createStream()
 
 if __name__ == '__main__':
     DEFAULT_SAMPLE_RATE = 16000
