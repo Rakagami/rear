@@ -10,3 +10,8 @@
 ## How it works
 
 We use [GQRX](https://gqrx.dk/) and use the UDP output stream to feed it into RadioEar. Internally, RadioEar uses [DeepSpeech](https://github.com/mozilla/DeepSpeech) to perform speech recognition on the audio data. RadioEar itself is a front-end to display the recognized speech data.
+
+## Links
+
+https://deepspeech.readthedocs.io/en/r0.9/
+https://github.com/AASHISHAG/deepspeech-german
