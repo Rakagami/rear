@@ -4,7 +4,7 @@
 
 RadioEar - A tool to eavesdrop whatever is currently in the air (radio).
 
-[![Python](https://www.tensorflow.org/images/tf_logo_horizontal.png)]()
+[![Python](https://img.shields.io/badge/python-3.7.6-blue)]()
 
 ## How it works
 
