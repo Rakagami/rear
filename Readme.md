@@ -2,9 +2,9 @@
   <img src="https://raw.githubusercontent.com/Rakagami/rear/main/images/logo.png">
 </div>
 
-RadioEar - A tool to eavesdrop whatever is currently in the air (radio).
-
 [![Python](https://img.shields.io/badge/python-3.7.6-blue)]()
+
+[RadioEar](https://github.com/Rakagami/rear) - A tool to eavesdrop whatever is currently in the air (radio).
 
 ## How it works
 
