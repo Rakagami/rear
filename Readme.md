@@ -1,6 +1,8 @@
-# REAR - Radio EAR
+<div align="center">
+  <img src="https://raw.githubusercontent.com/Rakagami/rear/main/images/logo.png">
+</div>
 
-A tool to eavesdrop whatever is currently in the air (radio).
+Radio Ear - A tool to eavesdrop whatever is currently in the air (radio).
 
 ## How it works
 
