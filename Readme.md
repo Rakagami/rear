@@ -13,7 +13,11 @@
   <img src="https://raw.githubusercontent.com/Rakagami/rear/main/images/diagram.png">
 </div>
 
-We use [GQRX](https://gqrx.dk/) and use the UDP output stream to feed it into RadioEar. Internally, RadioEar uses [DeepSpeech](https://github.com/mozilla/DeepSpeech) to perform speech recognition on the audio data. RadioEar itself is a front-end to display the recognized speech data.
+We use [GQRX](https://gqrx.dk/) and use the UDP output stream to feed it into RadioEar. Internally, RadioEar uses [DeepSpeech](https://github.com/mozilla/DeepSpeech) to perform speech recognition on the audio data. The stream of recognized words are inserted into [Grafana](https://grafana.com/) which is a visualization front-end for data.
+
+## Current State
+
+This repo is still one big hard TODO
 
 ## Links
 
