@@ -21,5 +21,5 @@ wip
 
 ## Links
 
-https://deepspeech.readthedocs.io/en/r0.9/
-https://github.com/AASHISHAG/deepspeech-german
+- https://deepspeech.readthedocs.io/en/r0.9/
+- https://github.com/AASHISHAG/deepspeech-german
