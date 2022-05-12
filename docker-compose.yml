@@ -1,9 +1,22 @@
 # Use root/example as user/password credentials
+# TODO: the way credentials are handled is still very dirty
+# TODO: grafana shoudl use its own volume so dashboards are persistent
 version: '3'
 
 services:
+  gqrx2dp:
+    build:
+      context: ./gqrx2deepspeech
+    restart: always
+    ports:
+      - 7355:7355/udp
+    depends_on:
+      - db
+
   grafana:
     image: grafana/grafana
+    volumes:
+      - ./grafana/grafana.ini:/etc/grafana/grafana.ini
     ports:
       - 3000:3000
 

@@ -16,7 +16,7 @@ import collections
 logging.basicConfig(level=logging.DEBUG)
 
 sampleRate = 48000
-ip = "127.0.0.1"
+ip = ""
 port = 7355
 nchannels = 1
 bps = 16 # bit per sample
@@ -24,21 +24,29 @@ bps = 16 # bit per sample
 query_format = "INSERT INTO grafana.wordsOverTime (word, count) VALUES('{}', {})"
 
 # TODO: change hardcoded credentials
-mydb = mysql.connector.connect(
-    host="localhost",
-    port="3306",
-    user="root",
-    password="password",
-    database="grafana",
-)
+# TODO: very ugly way of handling errors for database
+while True:
+    try:
+        mydb = mysql.connector.connect(
+            host="db",
+            port="3306",
+            user="root",
+            password="password",
+            database="grafana",
+        )
+        break
+    except:
+        continue
+print("Successfully connected to database")
 
 def listener():
     # Create a UDP socket
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     # Bind the socket to the port
+    print("Attempt to bind address", ip, "on port", port)
     server_address = (ip, port)
     s.bind(server_address)
-    print("Start Listening")
+    print("Successfully binded address")
 
     frames_per_buffer = 1920
     tmpbuf = b""
@@ -210,6 +218,9 @@ def main(ARGS):
         ARGS.model = os.path.join(model_dir, 'output_graph.pb')
         ARGS.scorer = os.path.join(model_dir, ARGS.scorer)
 
+    ip = ARGS.ip
+    port = ARGS.port
+
     print('Initializing model...')
     logging.info("ARGS.model: %s", ARGS.model)
     model = deepspeech.Model(ARGS.model)
@@ -251,6 +262,7 @@ def main(ARGS):
             cnt = cnt + 1
             if spinner: spinner.start()
             #logging.debug("streaming frame")
+            #print("Streaming Frame")
             stream_context.feedAudioContent(np.frombuffer(frame, np.int16))
         else:
             cnt = 0
@@ -279,8 +291,8 @@ if __name__ == '__main__':
     parser.add_argument('-r', '--rate', type=int, default=DEFAULT_SAMPLE_RATE,
                         help=f"Input device sample rate. Default: {DEFAULT_SAMPLE_RATE}. Your device may require 44100.")
 
-    parser.add_argument('-i', '--ip', type=str, default="localhost",
-                        help="IP Address of UDP source. Default is localhost")
+    parser.add_argument('-i', '--ip', type=str, default="127.0.0.1",
+                        help="IP Address of UDP source. Default is 127.0.0.1")
 
     parser.add_argument('-p', '--port', type=str, default=None, required=True,
                         help="Port of UDP source.")
