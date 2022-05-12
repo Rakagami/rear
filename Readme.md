@@ -17,7 +17,7 @@ We use [GQRX](https://gqrx.dk/) and use the UDP output stream to feed it into Ra
 
 ## Current State
 
-This repo is still one big hard TODO
+wip
 
 ## Links
 
